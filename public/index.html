@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Scraper</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #0077b5;
+            color: white;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 32px;
+        }
+
+        .section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #0077b5;
+            box-shadow: 0 0 0 3px rgba(0, 119, 181, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #0077b5;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #005885;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #475569;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #b91c1c;
+        }
+
+        .btn-success {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #047857;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 640px) {
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .status-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #0077b5;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .status-message {
+            font-size: 14px;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 12px 0;
+        }
+
+        .status-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+            border-left: 4px solid #22c55e;
+        }
+
+        .status-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 600;
+            color: #0077b5;
+            display: block;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .results-section {
+            margin-top: 24px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-table th {
+            background: #f8fafc;
+            padding: 12px;
+            text-align: left;
+            font-weight: 500;
+            color: #475569;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .results-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .results-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .login-instructions {
+            background: #eff6ff;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+
+        .login-instructions h4 {
+            color: #1e40af;
+            margin-bottom: 8px;
+        }
+
+        .login-instructions ol {
+            margin-left: 20px;
+        }
+
+        .login-instructions li {
+            margin-bottom: 4px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 LinkedIn Scraper</h1>
+            <p>Extract professional leads with contact information</p>
+        </div>
+
+        <div class="content">
+            <!-- Search Filters -->
+            <div class="section">
+                <h2 class="section-title">🔧 Search Filters</h2>
+                <div class="form-group">
+                    <label for="jobTitle">Job Title</label>
+                    <input type="text" id="jobTitle" placeholder="e.g., CEO, Software Engineer" value="CEO">
+                </div>
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" placeholder="e.g., United States, California" value="United States">
+                </div>
+                <div class="form-group">
+                    <label for="maxLeads">Maximum Leads</label>
+                    <select id="maxLeads">
+                        <option value="10">10 leads</option>
+                        <option value="25" selected>25 leads</option>
+                        <option value="50">50 leads</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="section">
+                <h2 class="section-title">🚀 Controls</h2>
+                <div class="controls-grid">
+                    <button class="btn btn-primary" onclick="openLogin()" id="loginBtn">
+                        🔑 Login to LinkedIn
+                    </button>
+                    <button class="btn btn-secondary" onclick="startScraping()" id="scrapeBtn">
+                        🎯 Start Scraping
+                    </button>
+                    <button class="btn btn-danger" onclick="stopScraping()" id="stopBtn" disabled>
+                        ⏹️ Stop
+                    </button>
+                    <button class="btn btn-success" onclick="exportToCSV()" id="exportBtn" disabled>
+                        📥 Export CSV
+                    </button>
+                </div>
+
+                <div id="loginInstructions" class="login-instructions hidden">
+                    <h4>📋 Login Instructions</h4>
+                    <ol>
+                        <li>A browser window will open with LinkedIn</li>
+                        <li>Login to your account manually</li>
+                        <li>Return here and click "Start Scraping"</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats">
+                <div class="stat-card">
+                    <span class="stat-number" id="leadsCount">0</span>
+                    <span class="stat-label">Leads Found</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="emailsCount">0</span>
+                    <span class="stat-label">Emails Found</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="phonesCount">0</span>
+                    <span class="stat-label">Phones Found</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="profilesCount">0</span>
+                    <span class="stat-label">Profiles Found</span>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="section">
+                <h2 class="section-title">📊 Status</h2>
+                <div class="status-card">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div id="statusMessage" class="status-message status-info">
+                        Ready to start. Click "Login to LinkedIn" to begin.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div class="section results-section">
+                <h2 class="section-title">📋 Results</h2>
+                <div id="resultsContainer">
+                    <table class="results-table hidden" id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Title</th>
+                                <th>Company</th>
+                                <th>Location</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Profile</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSessionId = null;
+        let scrapedData = [];
+        let eventSource = null;
+
+        function generateSessionId() {
+            return 'session_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function updateStatus(message, type = 'info') {
+            const statusElement = document.getElementById('statusMessage');
+            statusElement.textContent = message;
+            statusElement.className = `status-message status-${type}`;
+        }
+
+        function updateProgress(percent) {
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = percent + '%';
+        }
+
+        function updateStats() {
+            const leadsCount = scrapedData.length;
+            const emailsCount = scrapedData.filter(lead => lead.email !== 'Not available').length;
+            const phonesCount = scrapedData.filter(lead => lead.phone !== 'Not available').length;
+            const profilesCount = scrapedData.filter(lead => !lead.profileUrl.includes('Not Available')).length;
+
+            document.getElementById('leadsCount').textContent = leadsCount;
+            document.getElementById('emailsCount').textContent = emailsCount;
+            document.getElementById('phonesCount').textContent = phonesCount;
+            document.getElementById('profilesCount').textContent = profilesCount;
+        }
+
+        function toggleElement(id, show) {
+            document.getElementById(id).classList.toggle('hidden', !show);
+        }
+
+        async function openLogin() {
+            const loginBtn = document.getElementById('loginBtn');
+            
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '⏳ Opening...';
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    toggleElement('loginInstructions', true);
+                    updateStatus(result.message, 'info');
+                } else {
+                    updateStatus('Error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                updateStatus('Connection error: ' + error.message, 'error');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '🔑 Login to LinkedIn';
+            }
+        }
+
+        async function startScraping() {
+            const filters = {
+                jobTitle: document.getElementById('jobTitle').value,
+                location: document.getElementById('location').value,
+                maxLeads: parseInt(document.getElementById('maxLeads').value)
+            };
+
+            if (!filters.jobTitle || !filters.location) {
+                updateStatus('Please fill in all filter fields', 'warning');
+                return;
+            }
+
+            currentSessionId = generateSessionId();
+            
+            // Disable controls
+            document.getElementById('scrapeBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('exportBtn').disabled = true;
+
+            updateStatus('Starting scraping process...', 'info');
+            updateProgress(10);
+
+            try {
+                // Set up Server-Sent Events connection
+                setupSSEConnection();
+
+                // Start the scraping process
+                const response = await fetch('/api/start-scraping', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filters, sessionId: currentSessionId })
+                });
+
+                const result = await response.json();
+                if (!result.success) {
+                    updateStatus('Failed to start scraping: ' + result.error, 'error');
+                    enableControls();
+                }
+
+            } catch (error) {
+                updateStatus('Error starting scraping: ' + error.message, 'error');
+                enableControls();
+            }
+        }
+
+        function setupSSEConnection() {
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            eventSource = new EventSource(`/api/start-scraping?sessionId=${currentSessionId}`);
+            
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                switch (data.status) {
+                    case 'connected':
+                        updateStatus('Connected to server...', 'info');
+                        break;
+                    case 'starting':
+                        updateStatus(data.message, 'info');
+                        updateProgress(20);
+                        break;
+                    case 'progress':
+                        updateStatus(data.message, 'info');
+                        updateProgress(data.progress || 30);
+                        break;
+                    case 'completed':
+                        updateStatus(data.message, 'success');
+                        updateProgress(100);
+                        scrapedData = data.data || [];
+                        displayResults(scrapedData);
+                        updateStats();
+                        eventSource.close();
+                        enableControls();
+                        break;
+                    case 'error':
+                        updateStatus(data.message, 'error');
+                        updateProgress(0);
+                        eventSource.close();
+                        enableControls();
+                        break;
+                }
+            };
+
+            eventSource.onerror = function() {
+                updateStatus('Connection lost', 'error');
+                if (eventSource) {
+                    eventSource.close();
+                }
+                enableControls();
+            };
+        }
+
+        async function stopScraping() {
+            try {
+                if (eventSource) {
+                    eventSource.close();
+                }
+                
+                await fetch('/api/stop-scraping', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId: currentSessionId })
+                });
+                
+                updateStatus('Scraping stopped', 'warning');
+                updateProgress(0);
+                enableControls();
+            } catch (error) {
+                updateStatus('Error stopping: ' + error.message, 'error');
+            }
+        }
+
+        function enableControls() {
+            document.getElementById('scrapeBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('exportBtn').disabled = scrapedData.length === 0;
+        }
+
+        function displayResults(leads) {
+            const table = document.getElementById('resultsTable');
+            const tbody = document.getElementById('resultsBody');
+            
+            tbody.innerHTML = '';
+            
+            if (leads.length === 0) {
+                toggleElement('resultsTable', false);
+                return;
+            }
+            
+            toggleElement('resultsTable', true);
+            
+            leads.forEach(lead => {
+                const row = tbody.insertRow();
+                
+                row.insertCell(0).textContent = lead.name;
+                row.insertCell(1).textContent = lead.title;
+                row.insertCell(2).textContent = lead.company;
+                row.insertCell(3).textContent = lead.location;
+                row.insertCell(4).textContent = lead.email;
+                row.insertCell(5).textContent = lead.phone;
+                
+                const profileCell = row.insertCell(6);
+                if (lead.profileUrl && !lead.profileUrl.includes('Not Available')) {
+                    const link = document.createElement('a');
+                    link.href = lead.profileUrl;
+                    link.target = '_blank';
+                    link.textContent = 'View';
+                    link.style.color = '#0077b5';
+                    link.style.textDecoration = 'none';
+                    link.style.fontWeight = '500';
+                    profileCell.appendChild(link);
+                } else {
+                    profileCell.textContent = 'N/A';
+                }
+            });
+        }
+
+        function exportToCSV() {
+            if (scrapedData.length === 0) {
+                updateStatus('No data to export', 'warning');
+                return;
+            }
+
+            const headers = ['Name', 'Title', 'Company', 'Location', 'Email', 'Phone', 'Profile URL'];
+            const csvData = scrapedData.map(lead => [
+                `"${lead.name}"`,
+                `"${lead.title}"`,
+                `"${lead.company}"`,
+                `"${lead.location}"`,
+                `"${lead.email}"`,
+                `"${lead.phone}"`,
+                `"${lead.profileUrl}"`
+            ]);
+
+            const csvContent = [headers, ...csvData]
+                .map(row => row.join(','))
+                .join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `linkedin_leads_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            updateStatus(`Exported ${scrapedData.length} leads to CSV`, 'success');
+        }
+
+        // Initialize
+        updateStatus('Ready to start. Click "Login to LinkedIn" to begin.', 'info');
+    </script>
+</body>
+</html>
