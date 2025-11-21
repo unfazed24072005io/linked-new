@@ -1,0 +1,14 @@
+# This file tells Nixpacks how to build the app
+version = "1"
+
+[phases.setup]
+cmds = ["export NODE_ENV=production"]
+
+[phases.install]
+cmds = ["npm install"]
+
+[phases.build]
+cmds = ["echo 'Build complete'"]
+
+[start]
+cmd = "node server.js"
